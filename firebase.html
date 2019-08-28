@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.talentsprint.com/misc/blockchain/js/jquery.min.js"></script>
     <title>User Comments</title>
     <style>
         /* Just come optional fonts and characters for styling */
@@ -87,11 +88,6 @@
             <input type="submit" id="btnSubmitComment" value="Submit Comment">
           
         </form>
-         <hr>
-            <input type ="text"  name = "txt" id ="key">
-            <button  onclick="removeData()">RemoveData</button>
-         </hr>
-  
    
     </div>
     <!-- Connection to Firebase -->
@@ -139,13 +135,18 @@
                 snapshot.forEach(function (itemSnapshot) {
                     //Get the object for one snapshot
                     var itemData = itemSnapshot.val();
-                    var k = itemSnapshot.key;
-                    console.log(k);
+                    //console.log(Object.keys(itemData))
+                    //console.log(k);
                     var comment = itemData.comment;
                     var name = itemData.name;
-                    var remove = ' <input type="button" value="Delete From database" onclick="delete_user();" />';
+                    var k = itemSnapshot.key;
+                    var kd = itemSnapshot.val();
+                    console.log(kd)
+                    //var key = Object.keys(itemSnapshot.val())[2];
+                    console.log(k)
+                    var remove = ' <input type="button"  value="Delete From database" id = "' +k+'" class="delButton" onclick="removeData_1(this)" />';
                     var when = new Date(itemData.when).toLocaleDateString("en-us");
-                    showat.innerHTML += "<li>" + comment + "<span> -- " + name + "<span> -- "+k+"<span> -- "+remove+" (" + when +
+                    showat.innerHTML += "<li>" + comment + "<span> -- " + name + "</span>--<span class='key'>"+k+"</span>--<span> "+remove+" (" + when +
                         ")</span></li>";
                 })
             })
@@ -156,35 +157,39 @@
 
 
     </script>
-
+<script src = "https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"></script>
 <script>
-let ref = firebase.database().ref('comments/');
-
-function delete_user(){
-   
-   ref.set({})
+//
+//$(".delButton").on("click", function(){
+	
+  //let keyvalue =$(this).closest("li").find("span.key").text();
+  //let ref = firebase.database().ref('comments/'+ keyvalue);
   
-   alert('The user is deleted successfully!');
-   
-  }
+   //ref.child(key).remove();
+   //ref.set({})
+//});
+
+
+
+
   
   
 </script>
-<script>
 
-function removeData(){
-    const fb = firebase.database().ref()
-    key = document.getElementById('key').value;
-    fb.child('comments/'+ key +'/').remove()
-    alert('The user is deleted successfully!');
+<script>
+function removeData_1(params){
+   const fb = firebase.database().ref()
+    fb.child('comments/'+ params.id +'/').remove()
+    alert('The comment is deleted successfully!');
+    reload_page();
    
 }
 
-
-
-
-
-
+function reload_page(){
+   window.location.reload();
+  }
+  
 </script>
+
 </body>
 </html>
