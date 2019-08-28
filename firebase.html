@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="description" content="Use a free Google Firebase Database to allow visitors to leave comments on your web pages. From https://AlanSimpson.me/firebase">      
+    <meta name="author" content="Alan Simpson">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>User Comments</title>
+    <style>
+        /* Just come optional fonts and characters for styling */
+        @import url('https://fonts.googleapis.com/css?family=Josefin+Sans|Open+Sans|Pacifico|Source+Code+Pro');
+        /* FontAwesome cdn fonts */
+        @import url('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
+        body {
+            font-family: 'Open Sans', sans-serif;
+        }
+        /* Sample styling for comments and commenting controls */
+        #allcomments {
+            width: 90%;
+            margin: 1em 0 4em 1em;
+            padding: 1%;
+            border: solid 1px gray;
+            border-radius: 3px;
+            box-shadow: 2px 2px 2px silver;
+        }
+
+        ul#pastcomments {
+            list-style-type: none;
+        }
+
+        ul#pastcomments li:before {
+            font-family: FontAwesome;
+            content: "\f086";
+            font-size: 24pt;
+            color: gray;
+            margin-left: -42px;
+            padding-right: 10px;
+            position: relative;
+            top: 8px;
+        }
+
+        ul#pastcomments li {
+            margin: 0 0 2em 0;
+            padding: 10px;
+        }
+
+        ul#pastcomments li span {
+            font-size: 80%;
+            color: gray;
+            font-style: italic;
+        }
+
+        form#newcomment textarea {
+            height: 72px;
+        }
+
+        form#newcomment label {
+            display: inline-block;
+            margin: 1em 0 0 0;
+        }
+
+        form#newcomment textarea,
+        form#newcomment input[type="text"] {
+            margin-top: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="allcomments">
+        <h3>Comments</h3>
+    
+        <!-- We will show past comments in the list below-->
+        <ul id="pastcomments"></ul>
+        <!-- This is the form for entering a new comment -->
+        <form id="newcomment">
+           
+            <label for="tbName">First Name or Initials</label>
+            <br>
+            <input id="tbName" type="text" maxlength="20" required>
+            <br>
+            <label for="txComment">Your Comment / Question</label>
+            <br>
+            <textarea id="txComment" maxlength="4096" required style="width:96%"></textarea>
+            <br>
+            <input type="submit" id="btnSubmitComment" value="Submit Comment">
+          
+        </form>
+         <hr>
+            <input type ="text"  name = "txt" id ="key">
+            <button  onclick="removeData()">RemoveData</button>
+         </hr>
+  
+   
+    </div>
+    <!-- Connection to Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/6.4.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.4.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.4.0/firebase-database.js"></script>
+    <script>
+    // Your web app's Firebase configuration
+     var firebaseConfig = {
+       apiKey: "AIzaSyAP54I0zA3Z9LccG8A40SavPGWKSWqQIX4",
+       authDomain: "comments-box.firebaseapp.com",
+       databaseURL: "https://comments-box.firebaseio.com",
+       projectId: "comments-box",
+       storageBucket: "",
+       messagingSenderId: "704881653750",
+       appId: "1:704881653750:web:91c534874fcbb716"
+     };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        //Rootref is the whole database.
+        const rootRef = firebase.database().ref();
+        //commentsRef is just the pageCountsNode
+        const commentsRef = rootRef.child('comments');
+        //Listen for click on Submit Comment button, and post comment.
+        document.getElementById("btnSubmitComment").addEventListener("click", function () {
+            //Replace line breaks in comment with br tags.
+            var newcomment = document.getElementById('txComment').value.replace(/\n/g, "<br>");
+            //Define a new, keyed post.
+            var newPostRef = commentsRef.push();
+            //Fill tne new keyed post with data
+            newPostRef.set({
+                name: document.getElementById('tbName').value.trim(),
+                comment: newcomment.trim(),
+                frompage: location.pathname,
+                when: firebase.database.ServerValue.TIMESTAMP
+            });
+        });
+
+        function showpastcomments() {
+            var showat = document.getElementById('pastcomments');
+            //Get comments whose from page equals this page's pathname.
+            var commentsRef = firebase.database().ref('comments/').orderByChild('frompage').equalTo(location.pathname);
+            commentsRef.once('value', function (snapshot) {
+                snapshot.forEach(function (itemSnapshot) {
+                    //Get the object for one snapshot
+                    var itemData = itemSnapshot.val();
+                    var k = itemSnapshot.key;
+                    console.log(k);
+                    var comment = itemData.comment;
+                    var name = itemData.name;
+                    var remove = ' <input type="button" value="Delete From database" onclick="delete_user();" />';
+                    var when = new Date(itemData.when).toLocaleDateString("en-us");
+                    showat.innerHTML += "<li>" + comment + "<span> -- " + name + "<span> -- "+k+"<span> -- "+remove+" (" + when +
+                        ")</span></li>";
+                })
+            })
+        }
+        //Called when page first opens and also after Submit button click to show all comments for this page.
+        showpastcomments()
+
+
+
+    </script>
+
+<script>
+let ref = firebase.database().ref('comments/');
+
+function delete_user(){
+   
+   ref.set({})
+  
+   alert('The user is deleted successfully!');
+   
+  }
+  
+  
+</script>
+<script>
+
+function removeData(){
+    const fb = firebase.database().ref()
+    key = document.getElementById('key').value;
+    fb.child('comments/'+ key +'/').remove()
+    alert('The user is deleted successfully!');
+   
+}
+
+
+
+
+
+
+</script>
+</body>
+</html>
